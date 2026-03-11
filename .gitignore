@@ -1,3 +1,8 @@
+# myself
+my_dataset/assert/
+my_dataset/assert/*
+*.pem
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
