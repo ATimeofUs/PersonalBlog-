@@ -1,7 +1,6 @@
 # myself
-my_dataset/assert/
-my_dataset/assert/*
 assets/*
+media/*
 
 
 # Byte-compiled / optimized / DLL files
