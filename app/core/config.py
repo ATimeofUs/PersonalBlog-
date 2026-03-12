@@ -28,7 +28,7 @@ class Config:
         "apps": {
             "models": {
                 "models": [
-                    "my_dataset.models",
+                    "app.models.models",
                 ],
                 "default_connection": "default"
             }
@@ -47,22 +47,25 @@ class Config:
         
 
     def create_ssl_context(self) -> ssl.SSLContext:
-        # 获取当前文件所在目录的绝对路径，方便定位 assert 文件夹
+        # 获取当前文件所在目录的绝对路径，方便定位 ASSETS 文件夹
         BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-        ASSERT_DIR = os.path.join(BASE_DIR, "assert")   
+        BASE_DIR = os.path.dirname(BASE_DIR)  # 上一级目录
+        BASE_DIR = os.path.dirname(BASE_DIR)  # 上一级目录
+        
+        ASSETS_DIR = "assets/pem"   
         
         # 创建 TLS 客户端上下文
         ctx = ssl.create_default_context(ssl.Purpose.SERVER_AUTH)
         
         # 1. 加载 CA 证书 (验证 TiDB)
         ctx.load_verify_locations(
-            cafile=os.path.join(ASSERT_DIR, "ca-cert.pem")
+            cafile=os.path.join(ASSETS_DIR, "ca-cert.pem")
         )
         
         # 2. 加载客户端证书和私钥 (TiDB 验证你)
         ctx.load_cert_chain(
-            certfile=os.path.join(ASSERT_DIR, "client-cert.pem"),
-            keyfile=os.path.join(ASSERT_DIR, "client-key.pem")
+            certfile=os.path.join(ASSETS_DIR, "client-cert.pem"),
+            keyfile=os.path.join(ASSETS_DIR, "client-key.pem")
         )
         
         # 3. 安全配置

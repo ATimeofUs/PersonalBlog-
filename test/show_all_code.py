@@ -27,7 +27,7 @@ def find_py_and_count(now):
 
 def main():
     # 指定要扫描的目录（可以多个）
-    roots = ["fastapi_app", "test", "my_dataset"]
+    roots = ["app", "test"]
     for root in roots:
         if os.path.exists(root) and os.path.isdir(root):
             find_py_and_count(root)

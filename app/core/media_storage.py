@@ -4,7 +4,7 @@ from uuid import uuid4
 from fastapi import UploadFile
 
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent 
 MEDIA_ROOT = PROJECT_ROOT / "media"
 AVATAR_DIR = MEDIA_ROOT / "avatars"
 AVATAR_URL_PREFIX = "/media/avatars"

@@ -20,7 +20,7 @@ class UserLevel(IntEnum):
 
 
 # ============ 模型注册系统 ============
-ModelName = Literal["category", "tag", "post", "user"]
+ModelName = Literal["category", "post", "user"]
 MODEL_REGISTRY: dict[ModelName, Type[Model]] = {}
 
 
@@ -62,31 +62,6 @@ class Category(Model):
 
     class Meta:
         table = "categories"
-        ordering = ["name"]
-
-    def __str__(self):
-        return self.name
-
-
-@register_model("tag")
-class Tag(Model):
-    """标签模型"""
-
-    # 主键，并且自带自增功能
-    id = fields.IntField(pk=True)
-
-    name = fields.CharField(max_length=50, unique=True, description="标签名称")
-    slug = fields.CharField(
-        max_length=50, unique=True, description="标签别名（URL友好）"
-    )
-    description = fields.TextField(null=True, blank=True, description="标签描述")
-
-    # 时间戳
-    created_at = fields.DatetimeField(auto_now_add=True, description="创建时间")
-    updated_at = fields.DatetimeField(auto_now=True, description="更新时间")
-
-    class Meta:
-        table = "tags"
         ordering = ["name"]
 
     def __str__(self):
@@ -137,10 +112,6 @@ class Post(Model):
         description="文章作者",
     )
 
-    # 多对多关联：一个文章可以有多个标签，一个标签也可以关联多个文章
-    tags = fields.ManyToManyField(
-        "models.Tag", related_name="posts", through="post_tags", description="文章标签"
-    )
 
     # 时间戳
     created_at = fields.DatetimeField(auto_now_add=True, description="创建时间")
@@ -196,3 +167,19 @@ class ServiceError(Exception):
         self.detail = detail
         super().__init__(self.message)
 
+
+async def main():
+    from tortoise import Tortoise
+    from app.core import Config
+
+    config = Config()
+    
+    # 初始化 Tortoise ORM
+    await Tortoise.init(config=config.DATASET_CONFIG)
+    # 建立数据库
+    await Tortoise.generate_schemas()
+    await Tortoise.close_connections()
+
+if __name__ == "__main__":
+    import asyncio
+    asyncio.run(main())

@@ -3,11 +3,11 @@ from fastapi.staticfiles import StaticFiles
 import uvicorn
 from tortoise.contrib.fastapi import register_tortoise
 
-from fastapi_app.auth_router import router as auth_router
-from fastapi_app.user_router import router as user_router
+from app.routers.auth_router import router as auth_router
+from app.routers.user_router import router as user_router
 
-from fastapi_app.media_storage import MEDIA_ROOT
-from my_dataset.config import Config
+from app.core.media_storage import MEDIA_ROOT
+from app.core.config import Config
 
 # ============ FastAPI 应用初始化 ============
 

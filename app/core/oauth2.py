@@ -1,14 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
+import keyring
+import jwt
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
 from typing import Annotated
 
-
-from my_dataset import UserService
 from datetime import datetime, timedelta, timezone
-from .model import UserOut, Token
-import jwt
-import keyring
-    
+from ..schemas import UserOut
+from ..services import UserService
 
 SECRET_KEY = keyring.get_password("auth_secret_key", "jwt") 
 ALGORITHM = "HS256"
@@ -117,45 +115,3 @@ async def require_super_admin(current_user: Annotated[UserOut, Depends(get_curre
         raise HTTPException(status_code=403, detail="需要超级管理员权限")
     return current_user
 
-
-# ========== 路径 ========== 
-
-router = APIRouter(prefix="/auth", tags=["auth"])
-
-@router.post("/token", response_model=Token)
-async def login_for_access_token(
-    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
-):
-    """
-    用户登录并生成访问令牌。
-    参数：
-        form_data (OAuth2PasswordRequestForm): 用户登录表单数据。
-    返回：
-        Token: 包含访问令牌和令牌类型的对象。
-    异常：
-        HTTPException: 如果用户名或密码错误。
-    """
-    print("stage 0")
-    
-    user = await UserService.authenticate_user(
-        form_data.username,
-        form_data.password,
-    )
-
-    print("stage 1")
-
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-        )
-    print("stage 2")
-
-    access_token = create_access_token(data={"sub": user.username})
-
-    print("stage 3")
-
-    return Token(
-        access_token=access_token,
-        token_type="bearer",
-    )

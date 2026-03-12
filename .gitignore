@@ -1,7 +1,7 @@
 # myself
 my_dataset/assert/
 my_dataset/assert/*
-*.pem
+assets/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -10,23 +10,24 @@ class Token(BaseModel):
     token_type: str = "bearer"
 
 
-# ============ User（隐私数据，区分 In/Out） ============
+# ============ User ============
 
-class UserIn(BaseModel):
+class UserCreate(BaseModel):
     """用户注册/创建"""
     username: str = Field(..., max_length=50)
     email: EmailStr
     password: str = Field(..., min_length=6)
+    description: Optional[str] = Field(None, max_length=1000)  # 补上缺失的字段
     profile_photo: Optional[str] = Field(None, max_length=255)
-    description: Optional[str] = Field(None, max_length=500)  # 增加最大长度限制
 
 
 class UserUpdate(BaseModel):
-    """用户信息更新（全部可选）"""
-    username: Annotated[str | None, Field(max_length=50)] = None
-    description: Annotated[str | None, Field(max_length=500)] = None
+    """用户信息更新（全部可选）
+    注意：username 不可通过此接口修改（由后端安全策略决定，不在此暴露）
+    """
+    description: Annotated[str | None, Field(max_length=1000)] = None
     email: Annotated[EmailStr | None, Field()] = None
-    
+    profile_photo: Annotated[str | None, Field(max_length=255)] = None
 
 
 class UserOut(BaseModel):
@@ -59,17 +60,24 @@ class ChangePassword(BaseModel):
     new_password: str = Field(..., min_length=6)
 
 
-# ============ Category（非隐私，一套搞定） ============
+# ============ Category ============
 
-class CategoryBase(BaseModel):
-    """分类 - 创建/更新通用"""
+class CategoryCreate(BaseModel):
+    """分类 - 创建"""
     name: str = Field(..., max_length=50)
     slug: str = Field(..., max_length=50)
     description: Optional[str] = None
 
 
-class Category(CategoryBase):
-    """分类 - 完整输出"""
+class CategoryUpdate(BaseModel):
+    """分类 - 更新（全部可选）"""
+    name: Annotated[str | None, Field(max_length=50)] = None
+    slug: Annotated[str | None, Field(max_length=50)] = None
+    description: Optional[str] = None
+
+
+class CategoryOut(CategoryCreate):
+    """分类 - 输出"""
     id: int
     created_at: datetime
     updated_at: datetime
@@ -78,54 +86,42 @@ class Category(CategoryBase):
         from_attributes = True
 
 
-# ============ Tag（非隐私，一套搞定） ============
-
-class TagBase(BaseModel):
-    """标签 - 创建/更新通用"""
-    name: str = Field(..., max_length=50)
-    slug: str = Field(..., max_length=50)
-    description: Optional[str] = None
-
-
-class Tag(TagBase):
-    """标签 - 完整输出"""
+class CategoryBrief(BaseModel):
+    """分类简要信息（嵌套在文章里用）"""
     id: int
-    created_at: datetime
-    updated_at: datetime
+    name: str
+    slug: str
 
     class Config:
         from_attributes = True
 
-
-# ============ Post（内容较多，分层处理） ============
+# ============ Post ============
 
 class PostCreate(BaseModel):
-    """创建文章"""
+    """文章 - 创建"""
     title: str = Field(..., max_length=255)
     slug: str = Field(..., max_length=255)
     excerpt: Optional[str] = None
-    content: str
-    status: int = Field(default=0, ge=0, le=1)  # 0=草稿, 1=已发布
+    content: str = Field(..., description="文章内容，支持 Markdown 格式")
+    status: int = Field(0, description="0-草稿, 1-已发布")
     is_featured: bool = False
     category_id: Optional[int] = None
-    tag_ids: list[int] = Field(default_factory=list)
+    author_id: int
 
 
 class PostUpdate(BaseModel):
-    """更新文章（全部可选）"""
-    title: Optional[str] = Field(None, max_length=255)
-    slug: Optional[str] = Field(None, max_length=255)
+    """文章 - 更新（全部可选）"""
+    title: Annotated[str | None, Field(max_length=255)] = None
+    slug: Annotated[str | None, Field(max_length=255)] = None
     excerpt: Optional[str] = None
     content: Optional[str] = None
-    status: Optional[int] = Field(None, ge=0, le=1)
+    status: Optional[int] = Field(None, description="0-草稿, 1-已发布")
     is_featured: Optional[bool] = None
     category_id: Optional[int] = None
-    tag_ids: Optional[list[int]] = None
 
 
 class PostOut(BaseModel):
-    """文章完整输出（带关联数据）"""
-    id: int
+    """文章 - 展示给用户的输出（嵌套关联对象）"""
     title: str
     slug: str
     excerpt: Optional[str] = None
@@ -133,12 +129,8 @@ class PostOut(BaseModel):
     status: int
     is_featured: bool
     view_count: int
-
-    # 关联对象展开，不只是返回 id
-    category: Optional[Category] = None
     author: UserBrief
-    tags: list[Tag] = Field(default_factory=list)
-
+    category: Optional[CategoryBrief] = None
     created_at: datetime
     updated_at: datetime
     published_at: Optional[datetime] = None
@@ -148,7 +140,7 @@ class PostOut(BaseModel):
 
 
 class PostBrief(BaseModel):
-    """文章列表/摘要（不含正文，列表页用）"""
+    """文章 - 列表/摘要输出（不含正文）"""
     id: int
     title: str
     slug: str
@@ -156,23 +148,10 @@ class PostBrief(BaseModel):
     status: int
     is_featured: bool
     view_count: int
-
-    category: Optional[Category] = None
     author: UserBrief
-    tags: list[Tag] = Field(default_factory=list)
-
+    category: Optional[CategoryBrief] = None
     created_at: datetime
     published_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True
-
-
-# ============ 通用分页 ============
-
-class Pagination(BaseModel):
-    """分页响应包装"""
-    total: int
-    page: int
-    page_size: int
-    items: list  # 具体类型在路由层用泛型或直接标注
