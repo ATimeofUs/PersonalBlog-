@@ -3,9 +3,7 @@ from fastapi.staticfiles import StaticFiles
 import uvicorn
 from tortoise.contrib.fastapi import register_tortoise
 
-from app.routers.auth_router import router as auth_router
-from app.routers.user_router import router as user_router
-
+from app import user_router, auth_router, post_router, category_router
 from app.core.media_storage import MEDIA_ROOT
 from app.core.config import Config
 
@@ -17,6 +15,8 @@ MEDIA_ROOT.mkdir(parents=True, exist_ok=True)
 app = FastAPI()
 app.include_router(user_router)
 app.include_router(auth_router)
+app.include_router(post_router)
+app.include_router(category_router)
 
 app.mount("/media", StaticFiles(directory=str(MEDIA_ROOT)), name="media")
 

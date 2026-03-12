@@ -4,6 +4,7 @@ from .pydantic_model import (
     PostBrief,
     PostOut,
     PostUpdate,
+    PostQuery,
     
     # 用户相关
     UserBrief,
@@ -27,6 +28,7 @@ __all__ = [
     "PostBrief", 
     "PostOut",
     "PostUpdate",
+    "PostQuery",
     
     # 用户
     "UserBrief",

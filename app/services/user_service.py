@@ -1,10 +1,9 @@
 from typing import List
-from datetime import timezone, datetime
 
 from pwdlib import PasswordHash
 from tortoise.exceptions import DoesNotExist, IntegrityError
 
-from ..models.models import User, UserLevel, ServiceError
+from ..models import User, UserLevel, ServiceError
 from ..schemas.pydantic_model import UserCreate, UserUpdate, ChangePassword
 
 
@@ -34,7 +33,6 @@ class UserService:
         """注册新用户，自动对密码进行哈希处理"""
         try:
             password_hash = UserService.password_hash_function.hash(data.password)
-            now = datetime.now(timezone.utc)
             new_user = await User.create(
                 username=data.username,
                 email=data.email,
@@ -42,8 +40,6 @@ class UserService:
                 level=level,
                 description=data.description,
                 profile_photo=data.profile_photo,
-                created_at=now,
-                updated_at=now,
             )
             return new_user
         except IntegrityError:
@@ -79,7 +75,6 @@ class UserService:
         try:
             for key, value in update_data.items():
                 setattr(user, key, value)
-            user.updated_at = datetime.now(timezone.utc)
             await user.save()
             return user
         except IntegrityError:
@@ -94,7 +89,6 @@ class UserService:
             raise ServiceError("旧密码验证不通过")
 
         user.password_hash = UserService.password_hash_function.hash(data.new_password)
-        user.updated_at = datetime.now(timezone.utc)
         await user.save()
 
     @staticmethod
@@ -130,7 +124,6 @@ class UserService:
             raise ServiceError("用户不存在")
         
         user.level = new_level
-        user.updated_at = datetime.now(timezone.utc)
         try:
             await user.save()
             return user

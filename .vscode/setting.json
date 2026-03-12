@@ -1,7 +1,0 @@
-{
-    "python.analysis.indexing": false,
-    "python.languageServer": "Pylance",
-    "jupyter.askForKernelRestart": false,
-    "search.followSymlinks": false,
-    "settingsSync.keybindingsPerPlatform": false
-}

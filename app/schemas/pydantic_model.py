@@ -27,7 +27,6 @@ class UserUpdate(BaseModel):
     """
     description: Annotated[str | None, Field(max_length=1000)] = None
     email: Annotated[EmailStr | None, Field()] = None
-    profile_photo: Annotated[str | None, Field(max_length=255)] = None
 
 
 class UserOut(BaseModel):
@@ -106,7 +105,6 @@ class PostCreate(BaseModel):
     status: int = Field(0, description="0-草稿, 1-已发布")
     is_featured: bool = False
     category_id: Optional[int] = None
-    author_id: int
 
 
 class PostUpdate(BaseModel):
@@ -155,3 +153,14 @@ class PostBrief(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+POST_LIMIT = 20
+class PostQuery(BaseModel):
+    """通用文章查询参数，用于搜索、列表、按用户筛选等接口"""
+    keyword:     Optional[str] = Field(None, max_length=100, description="标题/摘要关键词")
+    category_id: Optional[int] = Field(None, ge=1)
+    status:      Optional[int] = Field(None, ge=0, le=1, description="0-草稿 1-已发布")
+    author_id:   Optional[int] = Field(None, ge=1)
+    limit:       int           = Field(POST_LIMIT, ge=1, le=100)
+    offset:      int           = Field(0, ge=0)
