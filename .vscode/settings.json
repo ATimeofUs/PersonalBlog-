@@ -6,8 +6,8 @@
     "settingsSync.keybindingsPerPlatform": false,
 
     "files.exclude": {
-        "**/README.md": true,      
+        // "**/README.md": true,      
         "**/LICENSE": true,        
-        "**/.gitignore": true      
+        // "**/.gitignore": true      
     }
 }
