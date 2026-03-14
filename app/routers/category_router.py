@@ -5,7 +5,7 @@ from fastapi import APIRouter, Body, Depends, HTTPException, Query
 from ..services import CategoryService
 from ..schemas.pydantic_model import CategoryCreate, CategoryUpdate, CategoryOut, CategoryBrief, PostBrief
 from ..schemas.pydantic_model import UserOut
-from ..core import get_current_user, require_admin
+from ..core import require_admin
 
 router = APIRouter(prefix="/category", tags=["category"])
 

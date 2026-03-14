@@ -22,6 +22,7 @@ from .pydantic_model import (
     ChangePassword,
 )
 
+
 __all__ = [
     # 文章
     "PostCreate",
@@ -44,4 +45,5 @@ __all__ = [
     
     # 其他
     "ChangePassword",
+
 ]

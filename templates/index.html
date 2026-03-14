@@ -1,17 +1,121 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh" data-theme="dark">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>测试 FastAPI 接口</title>
-    <link rel="stylesheet" href="/static/css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>平的个人博客</title>
+  <link rel="stylesheet" type="text/css" href="/static/pico.min.css">
+
+  <style>
+    .page {
+      display: none;
+      animation: fadeIn 0.4s ease;
+    }
+
+    .active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(5px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    nav {
+      margin-bottom: 2rem;
+    }
+  </style>
 </head>
+
 <body>
-    <div class="container">
-        <h1>FastAPI 测试页</h1>
-        <button id="fetchBtn">调用 / 接口</button>
-        <p id="result"></p>
-    </div>
-    <script src="/static/js/script.js"></script>
+  <header class="container">
+    <!-- 导航 -->
+    <nav>
+      <ul>
+        <li><strong>Ping's Blog</strong></li>
+      </ul>
+
+      <ul>
+        <li>
+          <input type="search" id="search" name="search" placeholder="搜索文章...">
+        </li>
+      </ul>
+      <ul>
+        <li><a href="#home">首页</a></li>
+        <li><a href="#posts">博文</a></li>
+        <li><a href="#person">个人中心</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="container">
+
+    <section id="home" class="page">
+      <h1>你好，Pico.css！</h1>
+      <p>这是一个简洁的段落。在 Arch Linux 下写代码总是让人心情愉悦。</p>
+      <article>
+        <header>最新动态</header>
+        正在研究 FastAPI 与 Pico CSS 的深度集成...
+        <footer>
+          <button class="outline" onclick="location.hash='#posts'">查看全部博文</button>
+        </footer>
+      </article>
+    </section>
+
+    <section id="posts" class="page">
+      <h2>博文列表</h2>
+      <figure>
+        <table role="grid">
+          <thead>
+            <tr>
+              <th>标题</th>
+              <th>日期</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>如何配置 Arch Linux 桌面</td>
+              <td>2026-03-10</td>
+              <td><a href="#">阅读</a></td>
+            </tr>
+            <tr>
+              <td>RTX 5070 深度学习环境搭建</td>
+              <td>2026-03-12</td>
+              <td><a href="#">阅读</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </figure>
+    </section>
+
+    <section id="about" class="page">
+      <h2>关于我</h2>
+      <p>我是平，一名热爱后端开发与 Linux 的开发者。</p>
+      <details>
+        <summary>我的技术栈</summary>
+        <ul>
+          <li>Python (FastAPI / PyTorch)</li>
+          <li>Linux (Arch / KDE)</li>
+          <li>前端 (HTML5 / Pico CSS)</li>
+        </ul>
+      </details>
+      <div aria-busy="true" id="loading-status" style="display:none;">
+        正在连接服务器...
+      </div>
+      <button data-tooltip="邮件已复制" data-placement="top" onclick="showLoading()">联系我</button>
+    </section>
+
+  </main>
+  <script src="/static/script.js"></script>
 </body>
+
 </html>

@@ -1,10 +1,21 @@
 {
-    "python.analysis.indexing": false,
-    "python.languageServer": "Pylance",
-    "search.followSymlinks": false,
+  "python.analysis.indexing": false,
+  "python.languageServer": "Pylance",
+  "search.followSymlinks": false,
 
-    "files.exclude": {
-        "**/README.md": true,      
-        "**/LICENSE": true,        
-    }
+  "files.exclude": {
+  },
+
+  // 为 HTML 文件单独设置缩进规则
+  "[html]": {
+    "editor.tabSize": 2,          // 缩进大小为2个空格
+    "editor.insertSpaces": true,   // 按Tab键时插入空格，而非制表符
+    "editor.detectIndentation": false // 禁用自动检测，强制使用上述规则
+  },
+  // 为 CSS 文件单独设置缩进规则
+  "[css]": {
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true,
+    "editor.detectIndentation": false
+  }
 }

@@ -1,0 +1,63 @@
+.
+├── app
+│   ├── core
+│   │   ├── config.py
+│   │   ├── __init__.py
+│   │   ├── media_storage.py
+│   │   ├── oauth2.py
+│   │   └── __pycache__
+│   ├── __init__.py
+│   ├── models
+│   │   ├── __init__.py
+│   │   ├── models.py
+│   │   └── __pycache__
+│   ├── __pycache__
+│   │   └── __init__.cpython-311.pyc
+│   ├── routers
+│   │   ├── auth_router.py
+│   │   ├── category_router.py
+│   │   ├── __init__.py
+│   │   ├── post_router.py
+│   │   ├── __pycache__
+│   │   └── user_router.py
+│   ├── schemas
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   └── pydantic_model.py
+│   └── services
+│       ├── category_service.py
+│       ├── __init__.py
+│       ├── post_service.py
+│       ├── __pycache__
+│       └── user_service.py
+├── assets
+│   ├── media
+│   │   └── avatars
+│   └── pem
+│       ├── ca-cert.pem
+│       ├── ca-key.pem
+│       ├── client-cert.pem
+│       ├── client-key.pem
+│       ├── client-req.pem
+│       ├── server-cert.pem
+│       ├── server-key.pem
+│       └── server-req.pem
+├── LICENSE
+├── main.py
+├── media
+│   └── avatars
+│       └── 447be3cf3fd549199dcb80634c0bdcb5.png
+├── openapi.json
+├── __pycache__
+│   ├── dataset.cpython-311.pyc
+│   └── main.cpython-311.pyc
+├── README.md
+├── static
+│   ├── pico.min.css
+│   └── script.js
+├── templates
+│   └── index.html
+├── temp.txt
+└── todo
+
+22 directories, 39 files

@@ -1,29 +1,10 @@
-# PersonalBlog-
-使用fastapi 和 tortoise orm搭建的个人博客平台
+## 技术栈 / Built With
 
-github地址：https://github.com/ATimeofUs/PersonalBlog-
+* [FastAPI](https://fastapi.tiangolo.com/) - 高性能的 Python Web 异步框架
+* [Tortoise-ORM](https://tortoise.github.io/) - 灵感源自 Django 的异步 ORM
+* [TiDB Cloud](https://tidbcloud.com/) - 分布式云数据库 (MySQL 兼容)
+* [Pico CSS](https://picocss.com/) - 优雅的无类 CSS 框架 (MIT License)
 
-
-
-## 数据库
-
-使用的是TIDB，可以免费注册并且使用，使用tortoise初始化数据库的时候需要这样
-
-
-
-```python
-from fastapi import FastAPI
-from tortoise.contrib.fastapi import register_tortoise
-
-app = FastAPI()
-register_tortoise(
-	app,
-	config= "你的config,
-	generate_schemas=False, # 不自动生成数据库表结构，改为手动管理迁移
-)
-```
-
-
-
-
-
+## 运行环境
+* **Python**: 3.11+
+* **OS**: Arch Linux (Tested)

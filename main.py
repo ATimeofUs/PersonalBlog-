@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+# from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 import uvicorn
@@ -28,12 +28,12 @@ TEMPLATES_DIR = BASE_DIR / "templates"
 app.mount("/media", StaticFiles(directory=str(MEDIA_ROOT)), name="media")
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=["*"],
+#     allow_methods=["*"],
+#     allow_headers=["*"],
+# )
 
 register_tortoise(
     app,
@@ -41,13 +41,24 @@ register_tortoise(
     generate_schemas=False,
 )
 
+
 @app.get("/", include_in_schema=False)
 async def home():
     return FileResponse(TEMPLATES_DIR / "index.html")
 
-@app.get("/api/hello")
+
+@app.get("/hello")
 async def hello():
     return {"message": "Hello World"}
 
+
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
+    uvicorn.run(
+        "main:app",
+        host="127.0.0.1",
+        port=8000,
+        reload=True,
+        root_path="/api",
+        proxy_headers=True,
+        forwarded_allow_ips="*",
+    )

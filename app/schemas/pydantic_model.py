@@ -139,7 +139,6 @@ class PostOut(BaseModel):
 
 class PostBrief(BaseModel):
     """文章 - 列表/摘要输出（不含正文）"""
-    id: int
     title: str
     slug: str
     excerpt: Optional[str] = None

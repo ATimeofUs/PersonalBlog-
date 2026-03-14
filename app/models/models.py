@@ -159,13 +159,7 @@ class User(Model):
     def __str__(self):
         return self.username
     
-    
-class ServiceError(Exception):
-    """自定义业务异常：用于逻辑错误（如查无数据、权限不足、唯一约束冲突）"""
-    def __init__(self, message: str, detail: Any = None):
-        self.message = message
-        self.detail = detail
-        super().__init__(self.message)
+
 
 
 async def main():

@@ -1,12 +1,18 @@
 from datetime import datetime, timezone
-from typing import List, Optional
+from typing import List
 
-from pydantic import BaseModel, Field
 from tortoise.exceptions import DoesNotExist, IntegrityError
 from tortoise.expressions import Q
 
-from ..models import Post, PostStatus, ServiceError, UserLevel
-from ..schemas import PostCreate, PostUpdate, PostOut, PostBrief, UserOut, PostQuery
+from ..models import (
+    Post,
+    PostStatus,
+    UserLevel,
+    PostNotFoundError,
+    DuplicateSlugError,
+    PermissionDeniedError,
+)
+from ..schemas import PostCreate, PostUpdate, UserOut, PostQuery
 
 
 # ── 权限检查 ──────────────────────────────────────────────────────────────────
@@ -18,7 +24,7 @@ def _is_admin(user: UserOut) -> bool:
 async def _require_post_owner_or_admin(post: Post, user: UserOut) -> None:
     """不是作者也不是管理员时抛出 ServiceError"""
     if post.author_id != user.id and not _is_admin(user):
-        raise ServiceError("无权操作该文章")
+        raise PermissionDeniedError(action="modify", resource="post")
 
 
 # ── PostService ───────────────────────────────────────────────────────────────
@@ -32,7 +38,7 @@ class PostService:
             # select_related 预加载关联表，避免 N+1
             return await Post.get(id=post_id).select_related("author", "category")
         except DoesNotExist:
-            raise ServiceError("文章不存在")
+            raise PostNotFoundError(post_id=post_id)
 
     @staticmethod
     async def get_post_by_slug(slug: str) -> Post:
@@ -40,7 +46,7 @@ class PostService:
         try:
             return await Post.get(slug=slug).select_related("author", "category")
         except DoesNotExist:
-            raise ServiceError("文章不存在")
+            raise PostNotFoundError(slug=slug)
 
     @staticmethod
     async def get_posts(query: PostQuery) -> List[Post]:
@@ -82,11 +88,10 @@ class PostService:
                 category_id=data.category_id,
                 author_id=user.id,          
                 view_count=0,
-                published_at= PostStatus.DRAFT,
             )
             return await Post.get(id=post.id).select_related("author", "category")
         except IntegrityError:
-            raise ServiceError("slug 已存在，请换一个")
+            raise DuplicateSlugError(slug=data.slug)
 
     @staticmethod
     async def update_post(post_id: int, data: PostUpdate, user: UserOut) -> Post:
@@ -109,7 +114,7 @@ class PostService:
             await post.save()
             return post
         except IntegrityError:
-            raise ServiceError("slug 已存在，请换一个")
+            raise DuplicateSlugError(slug=update_data.get("slug"))
 
     @staticmethod
     async def delete_post(post_id: int, user: UserOut) -> bool:
@@ -151,7 +156,7 @@ class PostService:
     async def toggle_featured(post_id: int, user: UserOut) -> Post:
         """置顶/取消置顶，仅管理员"""
         if not _is_admin(user):
-            raise ServiceError("仅管理员可操作置顶")
+            raise PermissionDeniedError(action="feature", resource="post")
         post = await PostService.get_post_by_id(post_id)
         post.is_featured = not post.is_featured
         post.updated_at = datetime.now(timezone.utc)
