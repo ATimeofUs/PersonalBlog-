@@ -2,13 +2,14 @@
 功能：封装用户相关的核心业务逻辑，包括 CRUD 操作、权限变更及密码管理。
 """
 
+import logging
+import os
 from typing import List
 from pwdlib import PasswordHash
 from tortoise.exceptions import DoesNotExist, IntegrityError
 
 from ..models import User, UserLevel, ServiceError
 from ..schemas.user_model import UserCreate, UserUpdate, UserChangePassword
-
 
 PASSWORD_HASH = PasswordHash.recommended()
 
@@ -169,22 +170,26 @@ class UserService:
         return True
 
     @staticmethod
-    async def update_profile_photo(user_id: int, profile_photo_path: str) -> User:
+    async def update_profile_photo(user_id: int, profile_photo_path: str, old_photo_path: str | None) -> User:
         """
         快速更新头像路径。
         
         Args:
             user_id (int): 用户 ID。
             profile_photo_path (str): 相对路径（通常由 media_storage 处理后传入）。
+            old_photo_path (str | None): 旧头像路径，用于后续清理。
         """
         user = await UserService.get_user_by_id(user_id=user_id)
         
-        
+        logging.info("正在更新用户 %d 的头像，旧路径：%s，新路径：%s", user_id, old_photo_path, profile_photo_path)
+                
         user.profile_photo = profile_photo_path
         try:
+            logging.info("正在保存用户 %d 的新头像路径到数据库 %s ，老的路径是 %s", user_id, profile_photo_path, old_photo_path)
             await user.save()
             return user
         except IntegrityError:
+            logging.error("更新用户 %d 头像失败: %s", user_id, "数据库错误")
             raise ServiceError("头像更新失败")
 
     @staticmethod

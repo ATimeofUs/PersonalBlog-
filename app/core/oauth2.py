@@ -1,4 +1,5 @@
 import keyring
+import logging
 import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -11,8 +12,10 @@ from ..models import User
 
 SECRET_KEY = keyring.get_password("auth_secret_key", "jwt") 
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24
 
+if not SECRET_KEY:
+    raise Exception("JWT secret key not found in keyring. Please set it using keyring.set_password('auth_secret_key', 'jwt', 'your_secret_key')")
 
 def create_access_token(data: dict):
     """
@@ -58,36 +61,25 @@ def decode_access_token(token: str):
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
 
+
 async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> UserData:
-    """
-    获取当前用户。
-    参数：
-        token (str): OAuth2 令牌。
-    返回：
-        UserOut: 当前用户对象。
-    异常：
-        HTTPException: 如果认证失败。
-    """
-    
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Invalid authentication credentials",
+        headers={"WWW-Authenticate": "Bearer"},  # ← OAuth2 规范要求这个 header
     )
-
     try:
         payload = decode_access_token(token)
         username: str | None = payload.get("sub")
         if username is None:
             raise credentials_exception
-    except Exception:
+    except jwt.ExpiredSignatureError:
+        logging.info("Token 已过期")
+        raise HTTPException(status_code=401, detail="Token 已过期，请重新登录",
+                            headers={"WWW-Authenticate": "Bearer"})
+    except jwt.InvalidTokenError as e:
+        logging.warning("Token 校验失败: %s", e)
         raise credentials_exception
-
-    user = await UserService.get_user_by_username(username)
-
-    if user is None:
-        raise credentials_exception
-
-    return user
 
 
 async def require_admin(current_user: Annotated[UserData, Depends(get_current_user)]):

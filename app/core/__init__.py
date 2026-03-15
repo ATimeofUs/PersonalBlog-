@@ -1,5 +1,5 @@
 from .config import TiDBConfig, SQLiteConfig
-from .media_storage import save_avatar_file, is_supported_image, delete_avatar_file
+from .media_storage import save_avatar_file, is_supported_image, delete_avatar_file, update_profile_photo
 from .oauth2 import create_access_token, require_super_admin, get_current_user, require_admin
 
 __all__ = [
@@ -11,6 +11,7 @@ __all__ = [
     "save_avatar_file",
     "is_supported_image",
     "delete_avatar_file",
+    "update_profile_photo",
     
     # auth
     "create_access_token",

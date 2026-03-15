@@ -4,6 +4,8 @@
   "search.followSymlinks": false,
 
   "files.exclude": {
+    "**/__pycache__": true,
+    "dist": true,
   },
 
   // 为 HTML 文件单独设置缩进规则

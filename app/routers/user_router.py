@@ -1,11 +1,13 @@
 """
-模块：UserRouter
-项目：PersonalBlog
-功能：定义用户相关的 Web API 路由，包含：
-    - 个人资料查询与更新 (Detail/Update/Avatar)
-    - 安全管理 (Password)
-    - 管理员管理行为 (List/Create/Delete/Upgrade)
-开发者：ping (Liu Junjie)
+GET	/user/detail
+GET	/user/brief
+POST	/user/change_password
+POST	/user/update
+POST	/user/avatar
+GET     /user/show_user
+POST	/user/delete_user
+POST	/user/create_user
+POST	/user/upgrade_user_level
 """
 
 from pathlib import Path
@@ -21,9 +23,14 @@ from ..schemas.user_model import (
     UserBrief,
     UserUpdate,
 )
-from ..core import get_current_user, require_admin, require_super_admin
+from ..core import (
+    get_current_user,
+    require_admin,
+    require_super_admin,
+    update_profile_photo,
+    save_avatar_file,
+)
 from ..models import UserLevel
-from ..core.media_storage import delete_avatar_file, save_avatar_file
 
 # 定义路由组：所有路径前缀为 /user，在 Swagger 文档中归类为 "user" 标签
 router = APIRouter(prefix="/user", tags=["user"])
@@ -98,7 +105,9 @@ async def read_users_detail(
 
 
 @router.get("/brief", response_model=UserBrief)
-async def read_user_brief(current_user: Annotated[UserData, Depends(get_current_user)]) -> UserBrief:
+async def read_user_brief(
+    current_user: Annotated[UserData, Depends(get_current_user)],
+) -> UserBrief:
     """获取当前登录用户的简要信息（常用于前端顶栏头像显示）"""
     return current_user
 
@@ -139,11 +148,12 @@ async def upload_avatar(
     """
     上传并更换个人头像
 
-    流程：验证格式 -> 保存新图 -> 更新数据库 -> 删除物理旧图
+    流程：验证格式 -> 保存新图 -> 更新数据库
     """
     file_extension = await user_dependency.get_avatar_extension(avatar)
     avatar_path = None
 
+    # 这里不对图片做删除操作
     try:
         # 1. 保存新文件到磁盘
         avatar_path = await save_avatar_file(
@@ -154,24 +164,13 @@ async def upload_avatar(
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
-    except Exception:
-        if avatar_path:
-            delete_avatar_file(avatar_path)
-        raise HTTPException(status_code=500, detail="保存头像失败")
 
-    try:
-        # 2. 更新数据库记录
-        updated_user = await UserService.update_profile_photo(
-            user_id=current_user.id, profile_photo_path=avatar_path
-        )
-    except Exception as exc:
-        # 如果数据库更新失败，必须清理刚保存的物理文件以免产生垃圾
-        delete_avatar_file(avatar_path)
-        raise HTTPException(status_code=400, detail=str(exc))
-
-    # 3. 成功后，清理该用户之前的旧头像文件
-    if current_user.profile_photo and current_user.profile_photo != avatar_path:
-        delete_avatar_file(current_user.profile_photo)
+    # 2. 更新数据库记录
+    updated_user = await update_profile_photo(
+        user_id=current_user.id,
+        profile_photo_path=avatar_path,
+        old_photo_path=current_user.profile_photo,  # 可能为None
+    )
 
     return updated_user
 
