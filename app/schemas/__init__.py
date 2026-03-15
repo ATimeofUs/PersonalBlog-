@@ -1,49 +1,17 @@
-from .pydantic_model import (
-    # 文章相关
-    PostCreate,
-    PostBrief,
-    PostOut,
-    PostUpdate,
-    PostQuery,
-    
-    # 用户相关
+from .user_model import (
     UserBrief,
     UserCreate,
-    UserOut,
     UserUpdate,
-    
-    # 分类相关
-    CategoryBrief,
-    CategoryCreate,
-    CategoryOut,
-    CategoryUpdate,
-    
-    # 其他
-    ChangePassword,
+    UserData,
+    UserChangePassword,
 )
 
 
 __all__ = [
-    # 文章
-    "PostCreate",
-    "PostBrief", 
-    "PostOut",
-    "PostUpdate",
-    "PostQuery",
-    
     # 用户
     "UserBrief",
     "UserCreate",
-    "UserOut",
+    "UserData",
     "UserUpdate",
-    
-    # 分类
-    "CategoryBrief",
-    "CategoryCreate", 
-    "CategoryOut",
-    "CategoryUpdate",
-    
-    # 其他
-    "ChangePassword",
-
+    "UserChangePassword"
 ]

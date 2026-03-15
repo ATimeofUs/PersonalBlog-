@@ -3,16 +3,19 @@ from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from typing import Annotated
 
 from ..services import UserService
-from ..schemas.pydantic_model import Token
-from ..core import create_access_token
-    
+from ..schemas.other_model import Token
+from ..core import create_access_token, get_current_user
+from ..schemas import UserData
 
-# ========== 路径 ========== 
+
+# ========== 路径 ==========
 router = APIRouter(prefix="/auth", tags=["auth"])
+
 
 @router.post("/token", response_model=Token)
 async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    # current_user: Annotated[UserData, Depends(get_current_user)]
 ):
     """
     用户登录并生成访问令牌。
@@ -23,16 +26,16 @@ async def login_for_access_token(
     异常：
         HTTPException: 如果用户名或密码错误。
     """
-    
+
     user = await UserService.authenticate_user(
-        form_data.username,
-        form_data.password,
+        username=form_data.username, 
+        password=form_data.password
     )
 
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
+            detail="用户名或密码错误",
         )
 
     access_token = create_access_token(data={"sub": user.username})

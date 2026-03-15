@@ -5,8 +5,9 @@ from fastapi.security import OAuth2PasswordBearer
 from typing import Annotated
 
 from datetime import datetime, timedelta, timezone
-from ..schemas import UserOut
 from ..services import UserService
+from ..schemas import UserData
+from ..models import User
 
 SECRET_KEY = keyring.get_password("auth_secret_key", "jwt") 
 ALGORITHM = "HS256"
@@ -22,11 +23,14 @@ def create_access_token(data: dict):
         str: 编码后的 JWT 令牌。
     """
     to_encode = data.copy()
-
+    
+    # 终止日期为现 + access token expire minutes
     expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
 
+    # add to dict
     to_encode.update({"exp": expire})
 
+    # 编码中
     encoded_jwt = jwt.encode(
         to_encode,
         SECRET_KEY,
@@ -54,7 +58,7 @@ def decode_access_token(token: str):
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
 
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
+async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> UserData:
     """
     获取当前用户。
     参数：
@@ -86,7 +90,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
     return user
 
 
-async def require_admin(current_user: Annotated[UserOut, Depends(get_current_user)]):
+async def require_admin(current_user: Annotated[UserData, Depends(get_current_user)]):
     """
     验证用户是否具有管理员权限。
     参数：
@@ -101,7 +105,7 @@ async def require_admin(current_user: Annotated[UserOut, Depends(get_current_use
     return current_user
 
 
-async def require_super_admin(current_user: Annotated[UserOut, Depends(get_current_user)]):
+async def require_super_admin(current_user: Annotated[UserData, Depends(get_current_user)]):
     """
     验证用户是否具有超级管理员权限。
     参数：

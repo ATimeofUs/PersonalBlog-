@@ -2,10 +2,11 @@ from dataclasses import dataclass
 import os
 import keyring
 import ssl
+from pathlib import Path
 
 
 @dataclass
-class Config:
+class TiDBConfig:
     DATASET_CONFIG = {
         "connections": {
             "default": {
@@ -79,10 +80,31 @@ class Config:
         self.DATASET_CONFIG["connections"]["default"]["credentials"]["ssl"] = self.create_ssl_context()
         return self.DATASET_CONFIG
 
+@dataclass
+class SQLiteConfig:
+    BASE_DIR = Path(__file__).parent.parent.parent
+    DB_PATH = BASE_DIR / "assets" / "db" / "db.sqlite3"
+
+    def load_db_config(self) -> dict:
+        print(self.BASE_DIR)
+        return {
+            "connections": {
+                "default": f"sqlite://{self.DB_PATH}"  # Tortoise 支持直接使用连接字符串
+            },
+            "apps": {
+                "models": {
+                    "models": ["app.models.models"],
+                    "default_connection": "default",
+                }
+            },
+            "use_tz": False,  # SQLite 对时区的支持较弱，建议设为 False 或统一使用 UTC
+            "timezone": "UTC",
+        }
+
 
 if __name__ == "__main__":
-    config = Config()
+    config = SQLiteConfig()
     db_config = config.load_db_config()
+
     import rich
-    
     rich.print(db_config)

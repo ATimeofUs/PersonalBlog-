@@ -1,6 +1,5 @@
 from tortoise import fields
 from tortoise.models import Model
-from typing import Literal, Type, Any
 from enum import IntEnum
 
 # ============ 枚举定义 ============
@@ -19,32 +18,6 @@ class UserLevel(IntEnum):
     SUPER_ADMIN = 2  # 超级管理员，就是我！
 
 
-# ============ 模型注册系统 ============
-ModelName = Literal["category", "post", "user"]
-MODEL_REGISTRY: dict[ModelName, Type[Model]] = {}
-
-
-def register_model(name: ModelName):
-    def wrapper(model: Type[Model]):
-        if MODEL_REGISTRY.get(name) is not None:
-            raise ValueError(f"Model name '{name}' is already registered")
-        MODEL_REGISTRY[name] = model
-        return model
-
-    return wrapper
-
-
-def get_model(name: ModelName) -> Type[Model]:
-    model = MODEL_REGISTRY.get(name)
-    if model is None:
-        raise ValueError(f"Model '{name}' not found")
-    return model
-
-
-# ============ 数据模型 ============
-
-
-@register_model("category")
 class Category(Model):
     """分类模型"""
 
@@ -68,7 +41,6 @@ class Category(Model):
         return self.name
 
 
-@register_model("post")
 class Post(Model):
     """文章模型"""
 
@@ -133,7 +105,6 @@ class Post(Model):
         return self.title
 
 
-@register_model("user")
 class User(Model):
     """用户模型"""
 
@@ -160,17 +131,15 @@ class User(Model):
         return self.username
     
 
-
-
 async def main():
     from tortoise import Tortoise
-    from app.core import Config
+    from app.core import SQLiteConfig
 
-    config = Config()
+    config = SQLiteConfig()
+    config = config.load_db_config()
     
     # 初始化 Tortoise ORM
-    await Tortoise.init(config=config.DATASET_CONFIG)
-    # 建立数据库
+    await Tortoise.init(config=config)
     await Tortoise.generate_schemas()
     await Tortoise.close_connections()
 
