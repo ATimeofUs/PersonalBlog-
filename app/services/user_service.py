@@ -9,7 +9,7 @@ from pwdlib import PasswordHash
 from tortoise.exceptions import DoesNotExist, IntegrityError
 
 from ..models import User, UserLevel, ServiceError
-from ..schemas.user_model import UserCreate, UserUpdate, UserChangePassword
+from ..schemas.user_schemas import UserCreate, UserUpdate, UserChangePassword
 
 PASSWORD_HASH = PasswordHash.recommended()
 

@@ -68,3 +68,5 @@ class PostSearch(BaseModel):
     
     # 让 Pydantic 接受来自 Query 参数的数据
     model_config = ConfigDict(from_attributes=True)
+    offset: int = Field(0, ge=0)
+    limit: int = Field(20, ge=1, le=50)

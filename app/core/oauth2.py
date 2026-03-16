@@ -8,13 +8,13 @@ from typing import Annotated
 from datetime import datetime, timedelta, timezone
 from ..services import UserService
 from ..schemas import UserData
-from ..models import User
+from ..models import ServiceError
 
 SECRET_KEY = keyring.get_password("auth_secret_key", "jwt") 
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 60 * 24 # 一天 
 
-if not SECRET_KEY:
+if SECRET_KEY is None:
     raise Exception("JWT secret key not found in keyring. Please set it using keyring.set_password('auth_secret_key', 'jwt', 'your_secret_key')")
 
 def create_access_token(data: dict):
@@ -66,13 +66,15 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> Use
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Invalid authentication credentials",
-        headers={"WWW-Authenticate": "Bearer"},  # ← OAuth2 规范要求这个 header
+        headers={"WWW-Authenticate": "Bearer"},  
     )
+    
     try:
         payload = decode_access_token(token)
         username: str | None = payload.get("sub")
         if username is None:
             raise credentials_exception
+        
     except jwt.ExpiredSignatureError:
         logging.info("Token 已过期")
         raise HTTPException(status_code=401, detail="Token 已过期，请重新登录",
@@ -81,6 +83,12 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> Use
         logging.warning("Token 校验失败: %s", e)
         raise credentials_exception
 
+    try:
+        user = await UserService.get_user_by_username(username=username)
+    except ServiceError:
+        raise credentials_exception
+
+    return user
 
 async def require_admin(current_user: Annotated[UserData, Depends(get_current_user)]):
     """
@@ -110,4 +118,3 @@ async def require_super_admin(current_user: Annotated[UserData, Depends(get_curr
     if current_user.level < 2:
         raise HTTPException(status_code=403, detail="需要超级管理员权限")
     return current_user
-

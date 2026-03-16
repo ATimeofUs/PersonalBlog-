@@ -129,13 +129,13 @@ class User(Model):
 
     def __str__(self):
         return self.username
-    
+
 
 async def main():
     from tortoise import Tortoise
-    from app.core import SQLiteConfig
+    from app.core import SQLiteConfig, TiDBConfig
 
-    config = SQLiteConfig()
+    config = TiDBConfig()
     config = config.load_db_config()
     
     # 初始化 Tortoise ORM

@@ -1,10 +1,7 @@
 from ..models import Post, PostStatus, Category, User, ServiceError
-from ..schemas.post_model import PostCreate, PostUpdate, PostBrief, PostDetail, PostSearch
-from typing import Optional
+from ..schemas.post_schemas import PostCreate, PostUpdate, PostSearch
 from datetime import datetime, timezone
-
-LIMIT = 20
-OFFSET = 0
+from tortoise.expressions import Q
 
 class PostService:
     """
@@ -107,12 +104,13 @@ class PostService:
     @staticmethod
     async def increment_view_count(post_id: int) -> None:
         """原子性地将指定文章的浏览次数 +1"""
-        updated = await Post.filter(id=post_id).update(
-            view_count=Post.view_count + 1  # type: ignore[operator]  # tortoise 支持字段表达式
-        )
-        if not updated:
+        post = await Post.filter(id=post_id).first()
+        if not post:
             raise ServiceError("文章不存在", code="NOT_FOUND", status_code=404)
-
+        
+        post.view_count += 1
+        await post.save(update_fields=["view_count"])
+        
     @staticmethod
     async def delete_post(post_id: int) -> None:
         """删除指定文章"""
@@ -128,7 +126,7 @@ class PostService:
 
         if search.keyword:
             query = query.filter(
-                (Post.title.contains(search.keyword)) | (Post.content.contains(search.keyword))
+                Q(title__icontains=search.keyword) | Q(content__icontains=search.keyword)
             )
         if search.category_id is not None:
             query = query.filter(category_id=search.category_id)
@@ -139,12 +137,5 @@ class PostService:
         if search.is_featured is not None:
             query = query.filter(is_featured=search.is_featured)
 
-        return await query.prefetch_related("author", "category").offset(OFFSET).limit(LIMIT)
+        return await query.prefetch_related("author", "category").offset(search.offset).limit(search.limit)
         
-
-    @staticmethod
-    async def search_post_by_authorname(user_name: str) -> list[Post]:
-        """根据作者名字查询文章列表，支持分页"""
-        query = Post.all().filter(author__username=user_name)
-        return await query.prefetch_related("author", "category").offset(OFFSET).limit(LIMIT)
-    

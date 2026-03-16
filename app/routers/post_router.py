@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Request, Response
 
 from ..services import PostService
-from ..schemas.post_model import (
+from ..schemas.post_schemas import (
     PostCreate,
     PostUpdate,
     PostBrief,
@@ -22,13 +22,13 @@ async def view_add(post_id: int, request: Request, response: Response) -> None:
     cookie_key = f"post_viewed_{post_id}"
     if request.cookies.get(cookie_key):
         return
-    # response 是 FastAPI 注入的对象，set_cookie 才是正确 API
+
     response.set_cookie(key=cookie_key, value="1", max_age=3600, httponly=True)
     await PostService.increment_view_count(post_id)
 
 
 # 路由
-@router.post("", response_model=PostDetail, status_code=201)
+@router.post("/create", response_model=PostDetail, status_code=201)
 async def create_post(
     data: PostCreate,
     current_user: Annotated[User, Depends(get_current_user)],
@@ -36,7 +36,6 @@ async def create_post(
     """创建文章（需登录）"""
     post = await PostService.create_post(data, author_id=current_user.id)
     return post
-
 
 @router.get("/search", response_model=list[PostBrief])
 async def search_posts(
@@ -46,9 +45,9 @@ async def search_posts(
     return await PostService.search_posts(search)
 
 
-@router.get("/{post_id}", response_model=PostDetail)
+@router.get("/id/{post_id}", response_model=PostDetail)
 async def get_post(
-    post_id: int,
+    post_id: int, # 给view_add用的参数，后同 
     _: Annotated[None, Depends(view_add)],
 ):
     """获取文章详情，自动增加浏览量（公开）"""

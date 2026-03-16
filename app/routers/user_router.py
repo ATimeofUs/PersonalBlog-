@@ -16,7 +16,7 @@ from typing import Annotated
 from fastapi import APIRouter, Body, Depends, File, HTTPException, UploadFile, Query
 
 from ..services import UserService
-from ..schemas.user_model import (
+from ..schemas.user_schemas import (
     UserData,
     UserCreate,
     UserChangePassword,
@@ -178,7 +178,7 @@ async def upload_avatar(
 # ── 3. 管理员接口 ──────────────────────────────────────────────────────────────
 
 
-@router.get("/show_user", response_model=list[UserBrief])
+@router.get("/show", response_model=list[UserBrief])
 async def show_user(
     current_user: Annotated[UserData, Depends(require_admin)],
     limit: Annotated[int, Query(ge=1, le=100)] = 20,
@@ -188,7 +188,7 @@ async def show_user(
     return await UserService.get_all_users(limit=limit, offset=offset)
 
 
-@router.post("/delete_user", response_model=bool)
+@router.post("/delete", response_model=bool)
 async def delete_user(
     user_id: Annotated[int, Body(..., embed=True)],
     current_user: Annotated[UserData, Depends(require_super_admin)],
@@ -200,10 +200,10 @@ async def delete_user(
         raise HTTPException(status_code=404, detail=str(exc))
 
 
-@router.post("/create_user", response_model=UserData)
+@router.post("/create", response_model=UserData)
 async def create_user(
     data: Annotated[UserCreate, Body(...)],
-    current_user: Annotated[UserData, Depends(require_admin)],
+    # TODO : current_user: Annotated[UserData, Depends(require_admin)],
 ):
     """[管理员] 手动创建新用户"""
     try:
@@ -212,7 +212,7 @@ async def create_user(
         raise HTTPException(status_code=400, detail=str(exc))
 
 
-@router.post("/upgrade_user_level", response_model=UserData)
+@router.post("/upgrade_level", response_model=UserData)
 async def upgrade_user_level(
     user_id: Annotated[int, Body(..., embed=True)],
     new_level: Annotated[UserLevel, Body(..., embed=True)],

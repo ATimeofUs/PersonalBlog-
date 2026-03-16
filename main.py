@@ -5,13 +5,11 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from tortoise.contrib.fastapi import register_tortoise
 
-from app import user_router, auth_router
+from app import user_router, auth_router, post_router, category_router
 from app.core.media_storage import MEDIA_ROOT
 from app.core.config import TiDBConfig, SQLiteConfig
 
 import uvicorn
-
-
 
 MEDIA_ROOT.mkdir(parents=True, exist_ok=True)
 
@@ -19,8 +17,8 @@ app = FastAPI()
 
 app.include_router(user_router)
 app.include_router(auth_router)
-# app.include_router(post_router)
-# app.include_router(category_router)
+app.include_router(post_router)
+app.include_router(category_router)
 
 BASE_DIR = Path(__file__).parent
 STATIC_DIR = BASE_DIR / "static"

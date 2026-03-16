@@ -3,7 +3,7 @@ from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from typing import Annotated
 
 from ..services import UserService
-from ..schemas.other_model import Token
+from ..schemas.other_schemas import Token
 from ..core import create_access_token, get_current_user
 from ..schemas import UserData
 

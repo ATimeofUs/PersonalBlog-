@@ -26,7 +26,7 @@ class UserUpdate(BaseModel):
 
 class UserData(BaseModel):
     """完整的用户信息输出"""
-    id: int
+    id : int 
     username: Annotated[str, USERNAME_FIELD]
     email: EmailStr
     profile_photo: Optional[str] = None
