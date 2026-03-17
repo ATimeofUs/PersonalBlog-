@@ -133,9 +133,9 @@ class User(Model):
 
 async def main():
     from tortoise import Tortoise
-    from app.core import SQLiteConfig, TiDBConfig
+    from app.core import SQLiteConfig 
 
-    config = TiDBConfig()
+    config = SQLiteConfig()
     config = config.load_db_config()
     
     # 初始化 Tortoise ORM

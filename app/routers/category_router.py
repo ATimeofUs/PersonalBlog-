@@ -21,7 +21,7 @@ from ..schemas.category_schemas import (
     CategorySearch
 )
 from ..schemas.user_schemas import UserData
-from ..services.categroy_serveice import CategoryService
+from ..service import CategoryService
 
 router = APIRouter(prefix="/category", tags=["category"])
 

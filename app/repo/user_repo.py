@@ -13,7 +13,8 @@ from ..schemas.user_schemas import UserCreate, UserUpdate, UserChangePassword
 
 PASSWORD_HASH = PasswordHash.recommended()
 
-class UserService:
+class UserRepo:
+    from ..cache import redis_cache
     """
     用户业务层类
     
@@ -23,7 +24,7 @@ class UserService:
     @staticmethod
     async def authenticate_user(username: str, password: str) -> User:
         """验证用户和密码"""
-        user_db = await UserService.get_user_by_username(username=username)
+        user_db = await UserRepo.get_user_by_username(username=username)
         
         if not PASSWORD_HASH.verify(password=password, hash=user_db.password_hash):
             raise ServiceError(message="错误密码" ,status_code=401)
@@ -113,7 +114,7 @@ class UserService:
             User: 更新后的用户对象。
         """
         # 1. 先验证用户是否存在
-        user = await UserService.get_user_by_id(user_id)
+        user = await UserRepo.get_user_by_id(user_id)
 
         # 2. exclude_unset=True 是关键：只提取前端 JSON 中实际存在的 Key，防止 None 覆盖数据库原值
         update_data = data.model_dump(exclude_unset=True)
@@ -142,7 +143,7 @@ class UserService:
             user_id (int): 用户 ID。
             data (UserChangePassword): 包含 old_password 和 new_password。
         """
-        user = await UserService.get_user_by_id(user_id)
+        user = await UserRepo.get_user_by_id(user_id)
 
         # 验证旧密码：将明文与数据库哈希值比对
         if not PASSWORD_HASH.verify(data.old_password, user.password_hash):
@@ -165,7 +166,7 @@ class UserService:
         Returns:
             bool: 成功返回 True。
         """
-        user = await UserService.get_user_by_id(user_id)
+        user = await UserRepo.get_user_by_id(user_id)
         await user.delete()
         return True
 
@@ -179,7 +180,7 @@ class UserService:
             profile_photo_path (str): 相对路径（通常由 media_storage 处理后传入）。
             old_photo_path (str | None): 旧头像路径，用于后续清理。
         """
-        user = await UserService.get_user_by_id(user_id=user_id)
+        user = await UserRepo.get_user_by_id(user_id=user_id)
         
         logging.info("正在更新用户 %d 的头像，旧路径：%s，新路径：%s", user_id, old_photo_path, profile_photo_path)
                 
@@ -212,7 +213,7 @@ class UserService:
             user_id (int): 用户 ID。
             new_level (UserLevel): 目标等级（Enum）。
         """
-        user = await UserService.get_user_by_id(user_id)
+        user = await UserRepo.get_user_by_id(user_id)
         
         # 虽然 get_user_by_id 内部会 raise，但此处加个判断更严谨
         if user is None:

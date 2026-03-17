@@ -57,7 +57,7 @@ async def async_client():
 # 所有函数级别的测试前后都会执行这个 fixture，确保数据库连接正确初始化和关闭
 @pytest_asyncio.fixture(autouse=True, scope="session")
 async def init_db():
-    await Tortoise.init(config=TiDBConfig().load_db_config())
+    await Tortoise.init(config=SQLiteConfig().load_db_config())
     yield
     
     await User.filter(username__not=ADMIN_USER["username"]).delete()

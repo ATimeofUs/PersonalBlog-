@@ -15,7 +15,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Body, Depends, File, HTTPException, UploadFile, Query
 
-from ..services import UserService
+from ..service import UserService
 from ..schemas.user_schemas import (
     UserData,
     UserCreate,

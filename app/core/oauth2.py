@@ -6,7 +6,7 @@ from fastapi.security import OAuth2PasswordBearer
 from typing import Annotated
 
 from datetime import datetime, timedelta, timezone
-from ..services import UserService
+from ..service import UserService
 from ..schemas import UserData
 from ..models import ServiceError
 

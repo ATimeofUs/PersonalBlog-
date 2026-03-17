@@ -23,6 +23,9 @@ from .post_schemas import (
     PostUpdate
 )
 
+from .other_schemas import (
+    Token
+)
 
 __all__ = [
     # 用户
@@ -44,6 +47,7 @@ __all__ = [
     "PostSearch",
     "PostStatus",
     "PostUpdate",       
-
+    # 其他模块的 Pydantic 模型
+    "Token",
 ]
 

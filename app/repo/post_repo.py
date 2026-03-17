@@ -3,10 +3,9 @@ from ..schemas.post_schemas import PostCreate, PostUpdate, PostSearch
 from datetime import datetime, timezone
 from tortoise.expressions import Q
 
-class PostService:
+class PostRepo:
     """
-    文章业务层类
-    
+    文章数据库类
     所有方法均为静态方法（@staticmethod），负责处理 Post 模型的增删改查及业务校验。
     """
 
@@ -73,7 +72,7 @@ class PostService:
     @staticmethod
     async def update_post(post_id: int, data: PostUpdate) -> Post:
         """更新现有文章的内容和属性（PATCH 语义，仅更新非 None 字段）"""
-        post = await PostService.get_post_by_id(post_id)
+        post = await PostRepo.get_post_by_id(post_id)
 
         update_data = data.model_dump(exclude_none=True)
 

@@ -1,56 +1,54 @@
 from pathlib import Path
-
 from fastapi import FastAPI
-from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
-from tortoise.contrib.fastapi import register_tortoise
+from tortoise import Tortoise
+from contextlib import asynccontextmanager
 
-from app import user_router, auth_router, post_router, category_router
+from app import user_router  
+from app import auth_router  
+from app import post_router  
+from app import category_router
 from app.core.media_storage import MEDIA_ROOT
-from app.core.config import TiDBConfig, SQLiteConfig
+from app.core import SQLiteConfig
 
 import uvicorn
 
-MEDIA_ROOT.mkdir(parents=True, exist_ok=True)
+# 使用 asynccontextmanager 的全局数据管理
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # 防止循环import，放在函数内部
+    from app.core import redis_manager
+    MEDIA_ROOT.mkdir(parents=True, exist_ok=True)
+    await Tortoise.init(config=SQLiteConfig().load_db_config())
+    await redis_manager.init_redis_pool()
+    yield
+    await redis_manager.close_redis_pool()
+    await Tortoise.close_connections()
+    
 
-app = FastAPI()
+def create_app() -> FastAPI:
+    app_instance = FastAPI(lifespan=lifespan)
 
-app.include_router(user_router)
-app.include_router(auth_router)
-app.include_router(post_router)
-app.include_router(category_router)
+    app_instance.include_router(user_router)
+    app_instance.include_router(auth_router)
+    app_instance.include_router(post_router)
+    app_instance.include_router(category_router)
 
-BASE_DIR = Path(__file__).parent
-STATIC_DIR = BASE_DIR / "static"
-TEMPLATES_DIR = BASE_DIR / "templates"
+    BASE_DIR = Path(__file__).parent
+    STATIC_DIR = BASE_DIR / "static"
 
-app.mount("/assets/media", StaticFiles(directory=str(MEDIA_ROOT)), name="media")
-app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+    app_instance.mount("/assets/media", StaticFiles(directory=str(MEDIA_ROOT)), name="media")
+    app_instance.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
-register_tortoise(
-    app,
-    config=SQLiteConfig().load_db_config(),
-    generate_schemas=False,
-)
-
-
-@app.get("/", include_in_schema=False)
-async def home():
-    return FileResponse(TEMPLATES_DIR / "index.html")
+    @app_instance.get("/")
+    async def home():
+        return {"message": "Welcome to the Personal Blog API! Please use the /docs endpoint to explore the API documentation."}
+        
+    return app_instance
 
 
-@app.get("/hello")
-async def hello():
-    return {"message": "Hello World"}
-
+app = create_app()
 
 if __name__ == "__main__":
-    uvicorn.run(
-        "main:app",
-        host="127.0.0.1",
-        port=8000,
-        reload=True,
-        root_path="/api",
-        proxy_headers=True,
-        forwarded_allow_ips="*",
-    )
+    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
+

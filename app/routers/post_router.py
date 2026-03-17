@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Request, Response
 
-from ..services import PostService
+from ..service import PostService
 from ..schemas.post_schemas import (
     PostCreate,
     PostUpdate,

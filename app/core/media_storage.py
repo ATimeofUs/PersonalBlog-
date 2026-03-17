@@ -4,7 +4,7 @@ import logging
 from pathlib import Path
 from uuid import uuid4
 from ..models import ServiceError, User
-from ..services import UserService
+from ..service import UserService
 from fastapi import UploadFile
 
 

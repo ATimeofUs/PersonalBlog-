@@ -4,8 +4,8 @@ from ..models import Category, ServiceError
 from ..schemas.category_schemas import CategoryCreate, CategoryUpdate
 
 
-class CategoryService:
-	"""分类业务层类，负责 Category 模型的增删改查。"""
+class CategoryRepo:
+	"""数据库类，负责 Category 模型的增删改查。"""
 
 	@staticmethod
 	async def create_category(data: CategoryCreate) -> Category:
@@ -39,7 +39,7 @@ class CategoryService:
 	@staticmethod
 	async def update_category(category_id: int, data: CategoryUpdate) -> Category:
 		"""更新分类（仅更新非 None 字段）"""
-		category = await CategoryService.get_category_by_id(category_id)
+		category = await CategoryRepo.get_category_by_id(category_id)
 		update_data = data.model_dump(exclude_none=True)
 
 		if not update_data:
@@ -54,7 +54,7 @@ class CategoryService:
 	@staticmethod
 	async def delete_category(category_id: int) -> bool:
 		"""删除分类"""
-		category = await CategoryService.get_category_by_id(category_id)
+		category = await CategoryRepo.get_category_by_id(category_id)
 		await category.delete()
 		return True
 
