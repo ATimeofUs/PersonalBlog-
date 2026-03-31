@@ -28,8 +28,8 @@ async def login_for_access_token(
     """
 
     user = await UserService.authenticate_user(
-        username=form_data.username, 
-        password=form_data.password
+        username=form_data.username,
+        password=form_data.password,
     )
 
     if not user:

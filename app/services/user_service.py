@@ -24,7 +24,7 @@ class UserService:
     async def authenticate_user(username: str, password: str) -> User:
         """验证用户和密码"""
         user_db = await UserService.get_user_by_username(username=username)
-        
+            
         if not PASSWORD_HASH.verify(password=password, hash=user_db.password_hash):
             raise ServiceError(message="错误密码" ,status_code=401)
         
@@ -61,7 +61,7 @@ class UserService:
             return new_user
         except IntegrityError:
             # 通常由数据库唯一索引 (Unique Index) 触发
-            raise ServiceError("用户名或邮箱已被注册", code=409)
+            raise ServiceError("用户名或邮箱已被注册", status_code=409)
 
     @staticmethod
     async def get_user_by_id(user_id: int) -> User:
@@ -80,7 +80,7 @@ class UserService:
         try:
             return await User.get(id=user_id)
         except DoesNotExist:
-            raise ServiceError("该用户不存在", code=404)
+            raise ServiceError("该用户不存在", status_code=404)
 
     @staticmethod
     async def get_user_by_username(username: str) -> User:
@@ -96,7 +96,7 @@ class UserService:
         try:
             return await User.get(username=username)
         except DoesNotExist:
-            raise ServiceError("该用户不存在", code=404)
+            raise ServiceError("该用户不存在", status_code=404)
 
     @staticmethod
     async def update_user(user_id: int, data: UserUpdate) -> User:
@@ -129,7 +129,7 @@ class UserService:
             await user.save()
             return user
         except IntegrityError:
-            raise ServiceError("更新失败，邮箱可能已被占用", code=409)
+            raise ServiceError("更新失败，邮箱可能已被占用", status_code=409)
 
     @staticmethod
     async def change_password(user_id: int, data: UserChangePassword) -> User:
@@ -146,13 +146,13 @@ class UserService:
 
         # 验证旧密码：将明文与数据库哈希值比对
         if not PASSWORD_HASH.verify(data.old_password, user.password_hash):
-            raise ServiceError("旧密码验证不通过", code=401)
+            raise ServiceError("旧密码验证不通过", status_code=401)
 
         # 存储新密码的哈希
         user.password_hash = PASSWORD_HASH.hash(data.new_password)
         await user.save()
         
-        return User
+        return user
 
     @staticmethod
     async def delete_user(user_id: int) -> bool:
